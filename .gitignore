@@ -1,0 +1,14 @@
+# Não subir segredos da API
+.streamlit/secrets.toml
+
+# Cache do Python
+__pycache__/
+*.py[cod]
+
+# Arquivos temporários e desnecessários
+*.DS_Store
+*.log
+*.tmp
+
+# Imagens baixadas localmente (thumbnails)
+thumbs/
