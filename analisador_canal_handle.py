@@ -8,8 +8,8 @@ import requests
 import re
 import zipfile
 
-st.set_page_config(page_title="Analisador de Canal do YouTube", layout="wide")
-st.title("\ud83d\udcfa Analisador de Canal do YouTube por Handle")
+st.title("📺 Analisador de Canal do YouTube por Handle")
+HANDLE = st.text_input("🔎 Handle do canal (sem @)", "DuneGG")
 
 API_KEY = st.secrets["API_KEY"]
 HANDLE = st.text_input("\ud83d\udd0e Handle do canal (sem @)", "DuneGG")
@@ -118,15 +118,16 @@ if st.session_state.df_resultados is not None:
 
     csv = io.BytesIO()
     df.to_csv(csv, sep=';', decimal=',', encoding='utf-8-sig', index=False, float_format='%.2f')
-    st.download_button("\ud83d\udcc5 Baixar CSV", data=csv.getvalue(), file_name=f"youtube_channel_data_{HANDLE}.csv", mime="text/csv")
+    st.download_button("📅 Baixar CSV", data=csv.getvalue(), file_name=f"youtube_channel_data_{HANDLE}.csv", mime="text/csv")
 
-    if st.button("\ud83d\udcf8 Baixar Thumbnails"):
+    if st.button("📸 Baixar Thumbnails"):
         zip_file_path = baixar_thumbs(df)
-
+    
         with open(zip_file_path, "rb") as fp:
             st.download_button(
-                label="\ud83d\udcbe Baixar ZIP de Thumbnails",
+                label="💾 Baixar ZIP de Thumbnails",
                 data=fp,
                 file_name=f"thumbs_{HANDLE}.zip",
                 mime="application/zip"
             )
+
