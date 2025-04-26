@@ -12,7 +12,6 @@ st.title("📺 Analisador de Canal do YouTube por Handle")
 HANDLE = st.text_input("🔎 Handle do canal (sem @)", "DuneGG")
 
 API_KEY = st.secrets["API_KEY"]
-HANDLE = st.text_input("\ud83d\udd0e Handle do canal (sem @)", "DuneGG")
 
 if "df_resultados" not in st.session_state:
     st.session_state.df_resultados = None
