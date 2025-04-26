@@ -6,30 +6,30 @@ import io
 import os
 import requests
 import re
+import zipfile
 
 st.set_page_config(page_title="Analisador de Canal do YouTube", layout="wide")
-st.title("📺 Analisador de Canal do YouTube por Handle")
+st.title("\ud83d\udcfa Analisador de Canal do YouTube por Handle")
 
 API_KEY = st.secrets["API_KEY"]
-HANDLE = st.text_input("🔎 Handle do canal (sem @)", "DuneGG")
+HANDLE = st.text_input("\ud83d\udd0e Handle do canal (sem @)", "DuneGG")
 
 if "df_resultados" not in st.session_state:
     st.session_state.df_resultados = None
 
-
 def sanitize(nome: str, limite=80):
-    # remove caracteres proibidos e reduz tamanho
     nome_limpo = re.sub(r'[\\/*?:"<>|]', "", nome)
     return nome_limpo[:limite].strip()
 
 def baixar_thumbs(df, pasta="thumbs"):
     os.makedirs(pasta, exist_ok=True)
     qualidades = ["maxresdefault", "hqdefault", "mqdefault", "sddefault", "default"]
+    arquivos_thumbs = []
 
     for _, row in df.iterrows():
-        vid   = row["video_id"]
+        vid = row["video_id"]
         title = sanitize(row["title"])
-        arq   = os.path.join(pasta, f"{title}_{vid}.jpg")
+        arq = os.path.join(pasta, f"{title}_{vid}.jpg")
 
         for q in qualidades:
             url = f"https://i.ytimg.com/vi/{vid}/{q}.jpg"
@@ -38,9 +38,17 @@ def baixar_thumbs(df, pasta="thumbs"):
                 if r.status_code == 200 and len(r.content) > 1500:
                     with open(arq, "wb") as f:
                         f.write(r.content)
+                    arquivos_thumbs.append(arq)
                     break
             except requests.RequestException:
-                pass      # tenta próxima qualidade
+                pass  # tenta próxima qualidade
+
+    # Compactar em ZIP
+    zip_path = "thumbs.zip"
+    with zipfile.ZipFile(zip_path, 'w') as zipf:
+        for file in arquivos_thumbs:
+            zipf.write(file, arcname=os.path.basename(file))
+    return zip_path
 
 if st.button("Buscar vídeos do canal"):
     if not API_KEY or not HANDLE:
@@ -110,8 +118,15 @@ if st.session_state.df_resultados is not None:
 
     csv = io.BytesIO()
     df.to_csv(csv, sep=';', decimal=',', encoding='utf-8-sig', index=False, float_format='%.2f')
-    st.download_button("📥 Baixar CSV", data=csv.getvalue(), file_name=f"youtube_channel_data_{HANDLE}.csv", mime="text/csv")
+    st.download_button("\ud83d\udcc5 Baixar CSV", data=csv.getvalue(), file_name=f"youtube_channel_data_{HANDLE}.csv", mime="text/csv")
 
-    if st.button("📸 Baixar Thumbnails"):
-        baixar_thumbs(df)
-        st.success("Thumbnails salvas na pasta local 'thumbs/'.")
+    if st.button("\ud83d\udcf8 Baixar Thumbnails"):
+        zip_file_path = baixar_thumbs(df)
+
+        with open(zip_file_path, "rb") as fp:
+            st.download_button(
+                label="\ud83d\udcbe Baixar ZIP de Thumbnails",
+                data=fp,
+                file_name=f"thumbs_{HANDLE}.zip",
+                mime="application/zip"
+            )
